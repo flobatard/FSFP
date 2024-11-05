@@ -31,10 +31,12 @@
 *.out
 *.app
 
-include/boost/*
-!include/boost/asio
-!include/boost/asio.hpp
+.vscode
 
+include/*
+!include/README.md
+lib/*
+!lib/README.md
 data/*
 !data/README.md
 obj/*
