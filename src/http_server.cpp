@@ -16,7 +16,7 @@ int run_server()
         return ret;
     });
 
-    app.route<crow::black_magic::get_parameter_tag("/test2/<int>")>("/test2/<int>")([](const crow::request& req, int a){
+    CROW_ROUTE(app, "/test/<int>")([](const crow::request& req, int a){
         
         char* ch_key = req.url_params.get("key");
         char* ch_id = req.url_params.get("id");
