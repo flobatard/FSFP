@@ -33,6 +33,12 @@ int run_server()
         return "Id= " + id + " Key= " + key + " A=" + to_string(a);
     });
 
+    CROW_ROUTE(app, "/test/serve_file_explicit/<path>")([](const crow::request& req,  crow::response& res, string path){
+        cout << path << endl;
+        res.set_static_file_info("README.md");
+        res.end();
+    });
+
     //set the port, set the app to run on multiple threads, and run the app
     app.port(8000).multithreaded().run();
     return 0;
