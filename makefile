@@ -14,7 +14,7 @@ TEST=test$(SEP)
 DISTR=distr$(SEP)
 
 
-SOURCES=LMDB_wrapper.cpp http_server.cpp
+SOURCES=LMDB_wrapper.cpp http_server.cpp fsfp_utils.cpp
 OBJS=$(SOURCES:%.cpp=%.o)
 PATHOBJS=$(OBJS:%=$(OBJ)%)
 WARNINGS=-Wall -Wextra -pedantic
