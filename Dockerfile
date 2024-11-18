@@ -29,6 +29,6 @@ COPY . /service
 WORKDIR /service
 RUN make
 
-EXPOSE 8000 8000
+EXPOSE 5000 5000
 
 ENTRYPOINT ["bin/main.exe"]

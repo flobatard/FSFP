@@ -1,0 +1,13 @@
+services:
+  fsfp:
+    restart: always
+    build:
+      context: .
+    ports: 
+      - "5000:5000"
+    volumes:
+      - type: volume
+        source: fsfp-data
+        target: /services/data
+volumes:
+  fsfp-data:
