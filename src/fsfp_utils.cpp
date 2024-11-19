@@ -1,5 +1,11 @@
 #include "fsfp_utils.h"
 
+#ifdef _WIN32
+    #define SEP "\\";
+#else
+    #define SEP "/";
+#endif
+
 using namespace std;
 namespace fs = std::filesystem;
 
