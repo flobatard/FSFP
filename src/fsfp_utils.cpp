@@ -1,4 +1,5 @@
 #include "fsfp_utils.h"
+#include <filesystem>
 
 #ifdef _WIN32
     #define DATA_FILES "data\\files"
