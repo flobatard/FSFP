@@ -71,7 +71,7 @@ int main()
     std::cout << "__cplusplus: " << __cplusplus;
     std::cout << std::endl;
     LMDBWrapper lmdb = LMDBWrapper("db1");
-    int nb_chunks = 1000;
+    int nb_chunks = 100;
     int chunk_size = 100;
     std::vector<std::thread> workers = std::vector<std::thread>(nb_chunks);
     

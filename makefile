@@ -13,15 +13,15 @@ LIB=lib$(SEP)
 TEST=test$(SEP)
 DISTR=distr$(SEP)
 
-OBJSUBDIRS=routes
+OBJSUBDIRS=routes databases
 OBJDIRS=$(OBJSUBDIRS:%=$(OBJ)%)
 
-SOURCES=LMDB_wrapper.cpp http_server.cpp fsfp_utils.cpp routes/admin.cpp routes/guest.cpp routes/owner.cpp
+SOURCES=LMDB_wrapper.cpp http_server.cpp fsfp_utils.cpp routes/admin.cpp routes/guest.cpp routes/owner.cpp databases/registry.cpp
 OBJS=$(SOURCES:%.cpp=%.o)
 PATHOBJS=$(OBJS:%=$(OBJ)%)
 WARNINGS=-Wall -Wextra -pedantic
 
-TEST_SOURCES=concurrency_test.cpp simple_test.cpp
+TEST_SOURCES=concurrency_test.cpp simple_test.cpp search_test.cpp
 TEST_BIN=$(TEST)bin$(SEP)
 TEST_OBJ=$(TEST)obj$(SEP)
 TEST_OBJS=$(TEST_SOURCES:$(TEST)$(SEP)%.cpp=$(TEST)$(SEP)%.o)

@@ -67,8 +67,8 @@ int main()
     std::cout << "__cplusplus: " << __cplusplus;
     std::cout << std::endl;
     LMDBWrapper lmdb = LMDBWrapper("db1");
-    int nb_chunks = 100;
-    int chunk_size = 100;
+    int nb_chunks = 10;
+    int chunk_size = 10;
 
     auto start = high_resolution_clock::now();
 
@@ -86,14 +86,31 @@ int main()
         mass_get(lmdb, i*chunk_size, chunk_size);
     }
     auto getClock = high_resolution_clock::now();
-    
+
     auto duration3 = duration_cast<microseconds>(getClock - putClock);
     std::cout << "Get chrono " << duration3.count() << "micros" << endl;
+
+    std::vector<std::string> vec = lmdb.keys();
+
+    std::cout << "Done " << duration3.count() << "micros" << endl;
+    std::cout << "Count: " << vec.size() << endl;
+    std::cout << endl << endl;
+
+    std::vector<std::string> vec2 = lmdb.search_starts_with("toto_100");
+
+    std::cout << "Done " << duration3.count() << "micros" << endl;
+    for (unsigned int i = 0; i < vec2.size(); i++)
+    {
+        std::cout << vec2[i] << " ";
+    }
+    std::cout << endl;
+    
+
     
 
     for (int i = 0; i<nb_chunks; i++)
     {
-        mass_delete(lmdb, i*chunk_size, chunk_size);
+        //mass_delete(lmdb, i*chunk_size, chunk_size);
     }
 
     auto endClock = high_resolution_clock::now();

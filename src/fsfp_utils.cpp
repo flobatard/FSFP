@@ -1,9 +1,9 @@
 #include "fsfp_utils.h"
 
 #ifdef _WIN32
-    #define SEP "\\";
+    #define DATA_FILES "data\\files"
 #else
-    #define SEP "/";
+    #define DATA_FILES "data/files"
 #endif
 
 using namespace std;
@@ -15,8 +15,8 @@ int upload_file(const string& path, const crow::multipart::part_view& part){
         return 400;
     }
 
-    fs::path file_path("data");
-    file_path = file_path / "files" / path;
+    fs::path file_path(DATA_FILES);
+    file_path = file_path / path;
     const fs::path parent_path = file_path.parent_path();
     fs::create_directories(parent_path);
 

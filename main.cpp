@@ -16,7 +16,7 @@ using namespace std;
 
 int main()
 {
-    LMDBWrapper lmdb = LMDBWrapper("db1");
+    LMDBWrapper root_lmdb = LMDBWrapper("root");
     std::cout << "Boost version: " 
           << BOOST_VERSION / 100000
           << "."
@@ -24,7 +24,6 @@ int main()
           << "."
           << BOOST_VERSION % 100 
           << std::endl << BOOST_VERSION << endl << (CROW_USE_BOOST && BOOST_VERSION >= 107000) << endl;
-
     run_server();
     return 0;
 }
