@@ -51,18 +51,15 @@ int LMDBWrapper::abort(MDB_txn* mdb_transaction)
 }
 
 // Méthode pour insérer une paire clé-valeur
-int LMDBWrapper::put(const std::string& key, const std::string& value) {
+int LMDBWrapper::put(const std::string& key, MDB_val value) {
     MDB_dbi mdb_dbi;
     MDB_txn* mdb_transaction;
     std::tie(mdb_dbi, mdb_transaction) = begin_transaction();
 
-    MDB_val mdb_key, mdb_value;
+    MDB_val mdb_key;
     mdb_key.mv_size = key.size();
     mdb_key.mv_data = (void*)key.c_str();
-    mdb_value.mv_size = value.size();
-    mdb_value.mv_data = (void*)value.c_str();
-
-    if (const int rc = mdb_put(mdb_transaction, mdb_dbi, &mdb_key, &mdb_value, 0))
+    if (const int rc = mdb_put(mdb_transaction, mdb_dbi, &mdb_key, &value, 0))
     {
         std::cerr << "Error putting data: " << rc << ":" << mdb_strerror(rc) << std::endl;
         abort(mdb_transaction);
@@ -73,7 +70,7 @@ int LMDBWrapper::put(const std::string& key, const std::string& value) {
 }
 
 // Méthode pour récupérer la valeur associée à une clé
-std::string LMDBWrapper::get(const std::string& key) {
+MDB_val LMDBWrapper::get(const std::string& key) {
     MDB_dbi mdb_dbi;
     MDB_txn* mdb_transaction;
     std::tie(mdb_dbi, mdb_transaction) = begin_transaction(true);
@@ -81,18 +78,19 @@ std::string LMDBWrapper::get(const std::string& key) {
     MDB_val mdb_key, mdb_value;
     mdb_key.mv_size = key.size();
     mdb_key.mv_data = (void*)key.c_str();
+    mdb_value.mv_size = 0;
+    mdb_value.mv_data = NULL;
 
     int rc = mdb_get(mdb_transaction, mdb_dbi, &mdb_key, &mdb_value);
     if (rc == MDB_NOTFOUND) {
         abort(mdb_transaction);
-        return "";  // Clé non trouvée
+        return mdb_value;  // Clé non trouvée
     } else if (rc != 0) {
         abort(mdb_transaction);
         throw runtime_error("Couldn't GET LMDB zone database  mdb_get() returned " + string(mdb_strerror(rc)));
     }
     end_transaction(mdb_transaction);
-    std::string value(static_cast<char*>(mdb_value.mv_data), mdb_value.mv_size);
-    return value;
+    return mdb_value;
 }
 
 // Méthode pour supprimer une paire clé-valeur
@@ -146,7 +144,7 @@ std::vector<std::string> LMDBWrapper::keys() {
     return ret;
 }
 
-std::vector<std::string> LMDBWrapper::search_starts_with(const std::string& starts) {
+std::vector<std::string> LMDBWrapper::search_keys_starts_with(const std::string& starts) {
     MDB_dbi mdb_dbi;
     MDB_txn* mdb_transaction;
     MDB_cursor* mdb_cursor;
@@ -195,13 +193,54 @@ int LMDBWrapper::delete_starts_with(const std::string& starts) {
     MDB_dbi mdb_dbi;
     MDB_txn* mdb_transaction;
     MDB_cursor* mdb_cursor;
-    std::tie(mdb_dbi, mdb_transaction) = begin_transaction(true);
-    mdb_cursor_open(mdb_transaction, mdb_dbi, &mdb_cursor);
+    std::tie(mdb_dbi, mdb_transaction) = begin_transaction();
+    int rc = mdb_cursor_open(mdb_transaction, mdb_dbi, &mdb_cursor);
+    int ret = 0;
 
-    mdb_cursor_del(mdb_cursor, 0);
+    
+
+    if (rc != 0) {
+        cerr << "Unable to open cursor" << endl;
+        mdb_cursor_close(mdb_cursor);
+        end_transaction(mdb_transaction);
+        return ret;
+    }
+
+    MDB_val key;
+    key.mv_size = starts.size();
+    key.mv_data = (void*)starts.c_str();
+    MDB_val mdb_value;
+
+    rc = mdb_cursor_get(mdb_cursor, &key, &mdb_value, MDB_SET_RANGE);
+    if (rc != 0){
+        cout << "UNABLE TO GET WITH CURSOR: "  << rc << " : " << string(mdb_strerror(rc)) << endl;
+        return ret;
+    }
+
+    std::string value;
+    while (rc == 0)
+    {
+        value.assign((char*) key.mv_data, key.mv_size);
+        if (value.rfind(starts, 0) != 0)
+        {
+            mdb_cursor_close(mdb_cursor);
+            end_transaction(mdb_transaction);    
+            return ret;
+        }
+        ret = ret + 1;
+        rc = mdb_cursor_del(mdb_cursor, 0);
+        if (rc != 0)
+        {
+            cerr << "Error while deleting" << rc << " : " << string(mdb_strerror(rc)) << endl;
+            mdb_cursor_close(mdb_cursor);
+            end_transaction(mdb_transaction);
+            return ret;
+        }
+        rc = mdb_cursor_get(mdb_cursor, &key, &mdb_value, MDB_NEXT);
+    }
 
     mdb_cursor_close(mdb_cursor);
-    end_transaction(mdb_transaction);    
+    end_transaction(mdb_transaction);
     return 0;
 }
 
@@ -234,6 +273,21 @@ LMDBWrapper::LMDBWrapper(const string& dirPath)
         std::cerr << "Error creating env: " << mdb_strerror(rc) << endl;
     }
     std::cout << "Database launched " << dirPath << endl;
+}
+
+std::string LMDBWrapper::mdb_val_to_string(MDB_val val){
+    if (val.mv_size == 0)
+    {
+        return "";
+    }
+    std::string ret((char*)val.mv_data, val.mv_size);
+    return ret;
+}
+MDB_val LMDBWrapper::string_to_mdb_val(std::string val){
+    MDB_val ret;
+    ret.mv_data = (void*)val.c_str();
+    ret.mv_size = val.size();
+    return ret;
 }
 
 LMDBWrapper::~LMDBWrapper()

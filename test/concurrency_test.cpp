@@ -17,12 +17,12 @@ int mass_put(LMDBWrapper& lmdb, int offset, int count = 1000)
 {
     for (int i = offset; i < count + offset; i++)
     {
-        lmdb.put("toto_" + std::to_string(i), "tata_" + std::to_string(i));
+        lmdb.put("toto_" + std::to_string(i), LMDBWrapper::string_to_mdb_val("tata_" + std::to_string(i)));
     }
     for (int i = offset; i < count + offset; i++)
     {
         std::string key = "toto_" + std::to_string(i);
-        std::string value = lmdb.get(key);
+        std::string value = LMDBWrapper::mdb_val_to_string(lmdb.get(key));
         if (!(value == "tata_" + std::to_string(i)))
         {
             std::cerr <<  "Error value PUT is not the same: DB= " << value << " test=" << "tata_" << std::to_string(i) << std::endl; 
@@ -41,7 +41,7 @@ int mass_delete(LMDBWrapper& lmdb, int offset, int count = 1000)
     for (int i = offset; i < count + offset; i++)
     {
         std::string key = "toto_" + std::to_string(i);
-        std::string value = lmdb.get(key);
+        std::string value = LMDBWrapper::mdb_val_to_string(lmdb.get(key));
         if (!(value == ""))
         {
             std::cerr <<  "Error value DELETE is not the same: DB= " << value << " test=" << "tata_" << std::to_string(i) << std::endl; 
@@ -56,7 +56,7 @@ int mass_get(LMDBWrapper& lmdb, int offset, int count = 1000)
     for (int i = offset; i < count + offset; i++)
     {
         std::string key = "toto_" + std::to_string(i);
-        std::string value = lmdb.get(key);
+        std::string value = LMDBWrapper::mdb_val_to_string(lmdb.get(key));
         if (!(value == "tata_" + std::to_string(i)))
         {
             std::cerr <<  "Error value GET is not the same: DB(" << key << ")=" << value << " test=" << "tata_" << std::to_string(i) << std::endl; 
