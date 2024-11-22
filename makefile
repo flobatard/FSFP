@@ -16,7 +16,10 @@ DISTR=distr$(SEP)
 OBJSUBDIRS=routes databases
 OBJDIRS=$(OBJSUBDIRS:%=$(OBJ)%)
 
-SOURCES=LMDB_wrapper.cpp http_server.cpp fsfp_utils.cpp routes/admin.cpp routes/guest.cpp routes/owner.cpp databases/registry.cpp
+SOURCES=LMDB_wrapper.cpp http_server.cpp fsfp_utils.cpp routes/admin.cpp routes/guest.cpp routes/owner.cpp databases/registry.cpp \
+	databases/file.cpp databases/owners.cpp
+
+
 OBJS=$(SOURCES:%.cpp=%.o)
 PATHOBJS=$(OBJS:%=$(OBJ)%)
 WARNINGS=-Wall -Wextra -pedantic
@@ -26,18 +29,25 @@ TEST_BIN=$(TEST)bin$(SEP)
 TEST_OBJ=$(TEST)obj$(SEP)
 TEST_OBJS=$(TEST_SOURCES:$(TEST)$(SEP)%.cpp=$(TEST)$(SEP)%.o)
 TEST_EXES=$(TEST_SOURCES:%.cpp=test_%.exe)
+TEST_MEM_EXES=$(TEST_SOURCES:%.cpp=test_mem%.exe)
 
 DEPENDENCIES=liblmdb.a
 
 LIBS=$(DEPENDENCIES:%.a=$(LIB)%.a)
+FSANITIZER_FLAG=-fsanitize=address
 
 FLAGS= -std=c++23 $(WARNINGS) -I$(HEADERDIR) -I$(INCLUDEDIR) -L$(LIB)
 
 all: $(OBJS) main.o $(BIN)
 	$(CC) $(FLAGS) -o $(BIN)$(NAME).exe -static $(OBJ)main.o $(OBJS:%=$(OBJ)%) $(LIBS)
 
+mem_main: $(OBJS) main.o $(BIN)
+	$(CC) $(FSANITIZER_FLAG) $(FLAGS) -o $(BIN)mem_$(NAME).exe $(OBJ)main.o $(OBJS:%=$(OBJ)%) $(LIBS)
+
 tests: $(TEST_EXES)
 	@echo Test generated
+
+mem_tests: $(TEST_MEM_EXES)
 
 clean:
 	rm -rf obj/*
@@ -51,14 +61,17 @@ share: $(OBJS)
 test_%.exe: test_%.o $(TEST_BIN)
 	$(CC) $(FLAGS) -o $(TEST_BIN)$(@:test_%.exe=%.exe) -static $(TEST_OBJ)$(@:test_%.exe=%.o) $(OBJS:%=$(OBJ)%) $(LIBS)
 
+test_mem%.exe: test_%.o $(TEST_BIN)
+	$(CC) $(FSANITIZER_FLAG) $(FLAGS) -o $(TEST_BIN)$(@:test_mem%.exe=mem_%.exe) $(TEST_OBJ)$(@:test_mem%.exe=%.o) $(OBJS:%=$(OBJ)%) $(LIBS)
+
 test_%.o: $(TEST_OBJ)
-	$(CC) -g $(FLAGS) -c $(TEST)$(@:test_%.o=%.cpp) -o $(TEST)$(SEP)$(OBJ)$(@:test_%.o=%.o) -static
+	$(CC) -g $(FLAGS) -c $(TEST)$(@:test_%.o=%.cpp) -o $(TEST)$(SEP)$(OBJ)$(@:test_%.o=%.o)
 
 main.o: $(OBJ)
-	$(CC) -g $(FLAGS) -c main.cpp -o $(OBJ)main.o -static
+	$(CC) -g $(FLAGS) -c main.cpp -o $(OBJ)main.o
 
 %.o: $(OBJDIRS)
-	$(CC) -g $(FLAGS) -c $(SOURCEDIR)$(@:%.o=%.cpp) -o $(OBJ)$@ -static
+	$(CC) -g $(FLAGS) -c $(SOURCEDIR)$(@:%.o=%.cpp) -o $(OBJ)$@
 
 $(BIN):
 	mkdir -p $@

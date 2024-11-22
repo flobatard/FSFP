@@ -16,9 +16,10 @@ class DatabasesRegistry
         void operator=(const DatabasesRegistry &) = delete;
         static DatabasesRegistry* GetInstance();
         static void DestroyInstance();
-        LMDBWrapper* getOwnerDatabase(const std::string& value);
+        LMDBWrapper* getOwnerDatabase(const std::string& owner);
         LMDBWrapper* getRootDatabase();
         LMDBWrapper* getRegistryDatabase();
+        int insertNewOwner(std::string owner, LMDBWrapper* lmdb);
         DatabasesRegistry();
         ~DatabasesRegistry();
         

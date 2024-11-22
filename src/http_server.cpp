@@ -19,6 +19,8 @@ int run_server()
     });
 
     CROW_ROUTE(app, "/test/<int>")([](const crow::request& req, int a){
+
+        std::string user_agent = crow::get_header_value(req.headers, "User-Agent");
         
         char* ch_key = req.url_params.get("key");
         char* ch_id = req.url_params.get("id");
@@ -32,7 +34,7 @@ int run_server()
         {
             id = string(ch_id);
         }
-        return "Id= " + id + " Key= " + key + " A=" + to_string(a);
+        return "Id= " + id + " Key= " + key + " A=" + to_string(a) + " UA:" + user_agent;
     });
 
     CROW_ROUTE(app, "/test/file/<path>")([](const crow::request& req, crow::response& res, string path){

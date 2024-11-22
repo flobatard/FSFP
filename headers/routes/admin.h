@@ -8,6 +8,6 @@
 
 
 int check_admin_credentials(const crow::request& req);
-int admin_routes();
+int admin_routes(crow::SimpleApp& app);
 
 #endif //ROUTES_ADMIN_H
