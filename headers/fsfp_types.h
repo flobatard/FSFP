@@ -1,5 +1,5 @@
-#ifndef FSFP_UTILS_H
-#define FSFP_UTILS_H
+#ifndef FSFP_TYPES_H
+#define FSFP_TYPES_H
 #include <cstddef>
 
 namespace fsfp::types{
@@ -9,4 +9,4 @@ namespace fsfp::types{
     };
 }
 
-#endif //FSFP_UTILS_H
+#endif //FSFP_TYPES_H

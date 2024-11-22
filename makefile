@@ -13,11 +13,11 @@ LIB=lib$(SEP)
 TEST=test$(SEP)
 DISTR=distr$(SEP)
 
-OBJSUBDIRS=routes databases
+OBJSUBDIRS=databases routes/middlewares
 OBJDIRS=$(OBJSUBDIRS:%=$(OBJ)%)
 
 SOURCES=LMDB_wrapper.cpp http_server.cpp fsfp_utils.cpp routes/admin.cpp routes/guest.cpp routes/owner.cpp databases/registry.cpp \
-	databases/file.cpp databases/owners.cpp
+	databases/file.cpp databases/owners.cpp routes/middlewares/auth_middlewares.cpp
 
 
 OBJS=$(SOURCES:%.cpp=%.o)

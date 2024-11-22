@@ -7,6 +7,6 @@
 #include <crow.h>
 
 
-int guest_routes();
+int guest_routes(crow::SimpleApp& app);
 
 #endif //ROUTES_GUEST_H

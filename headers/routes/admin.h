@@ -5,9 +5,8 @@
 
 #include <boost/asio.hpp>
 #include <crow.h>
+#include "fsfp_app_types.h"
 
-
-int check_admin_credentials(const crow::request& req);
-int admin_routes(crow::SimpleApp& app);
+int admin_routes(FSFP_APP_TYPE& app);
 
 #endif //ROUTES_ADMIN_H

@@ -1,12 +1,18 @@
 #include "http_server.h"
 #include "fsfp_utils.h"
+#include "routes/admin.h"
+#include "routes/owner.h"
+#include "fsfp_app_types.h"
 
 using namespace std;
 namespace fs = std::filesystem;
 
 int run_server()
 {
-    crow::SimpleApp app; //define your crow application
+    crow::App<AdminAreaGuard, OwnerAreaGuard> app; //define your crow application
+
+    admin_routes(app);
+    owner_routes(app);
 
     //define your endpoint at the root directory
     CROW_ROUTE(app, "/")([](){

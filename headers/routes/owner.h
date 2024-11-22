@@ -5,9 +5,8 @@
 
 #include <boost/asio.hpp>
 #include <crow.h>
+#include "fsfp_app_types.h"
 
-
-int check_owner_credentials(const crow::request& req);
-int owner_routes();
+int owner_routes(FSFP_APP_TYPE& app);
 
 #endif //ROUTES_OWNER_H
