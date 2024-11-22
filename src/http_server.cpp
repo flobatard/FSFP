@@ -43,7 +43,7 @@ int run_server()
         return "Id= " + id + " Key= " + key + " A=" + to_string(a) + " UA:" + user_agent;
     });
 
-    CROW_ROUTE(app, "/test/file/<path>")([](const crow::request& req, crow::response& res, string path){
+    CROW_ROUTE(app, "/test/file/<path>")([](const crow::request&, crow::response& res, string path){
         fs::path file_path("data");
         file_path = file_path / "files" / path;
         res.set_static_file_info(file_path);

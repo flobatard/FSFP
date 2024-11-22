@@ -6,8 +6,7 @@ using namespace std;
     CROW_ROUTE(app, route).CROW_MIDDLEWARES(app, OwnerAreaGuard)
 
 int owner_routes(FSFP_APP_TYPE& app){
-    CROW_ROUTE(app, "/owner/me")
-    .CROW_MIDDLEWARES(app, OwnerAreaGuard)([](){
+    CROW_OWNER_ROUTE(app, "/owner/me")([](){
         return crow::response(200);
     });
     return 0;

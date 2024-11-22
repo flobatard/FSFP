@@ -6,13 +6,17 @@
 #include <boost/asio.hpp>
 #include <crow.h>
 #include "fsfp_app_types.h"
+#include "LMDB_wrapper.h"
+#include "databases/registry.h"
+#include "databases/owners.h"
+
 int check_admin_credentials(const crow::request& req);
 struct AdminAreaGuard : crow::ILocalMiddleware
 {
     struct context
     {};
 
-    void before_handle(crow::request& req, crow::response& res, context& ctx)
+    void before_handle(crow::request& req, crow::response& res, context&)
     {
         int admin_check = check_admin_credentials(req);
         if (admin_check > 200)
@@ -22,7 +26,7 @@ struct AdminAreaGuard : crow::ILocalMiddleware
         }
     }
 
-    void after_handle(crow::request& req, crow::response& res, context& ctx)
+    void after_handle(crow::request&, crow::response&, context&)
     {}
 };
 
@@ -33,7 +37,7 @@ struct OwnerAreaGuard : crow::ILocalMiddleware
     struct context
     {};
 
-    void before_handle(crow::request& req, crow::response& res, context& ctx)
+    void before_handle(crow::request& req, crow::response& res, context&)
     {
         int owner_check = check_owner_credentials(req);
         if (owner_check > 200)
@@ -43,7 +47,7 @@ struct OwnerAreaGuard : crow::ILocalMiddleware
         }
     }
 
-    void after_handle(crow::request& req, crow::response& res, context& ctx)
+    void after_handle(crow::request&, crow::response&, context&)
     {}
 };
 
