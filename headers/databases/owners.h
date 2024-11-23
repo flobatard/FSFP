@@ -11,7 +11,7 @@ namespace fsfp::db{
 
     size_t size_of_owner_metadata(const owner_metadata& owner_metadata);
     void* serialize_owner_metadata(owner_metadata& owner_metadata);
-    owner_metadata deserialize_owner_metadata(void* raw_value);
+    owner_metadata deserialize_owner_metadata(void* raw_value, size_t size = 0);
 
     int owner_put(LMDBWrapper* lmdb, std::string owner, owner_metadata& owner_metadata);
     owner_metadata owner_get(LMDBWrapper* lmdb, std::string owner);
