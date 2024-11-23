@@ -8,14 +8,14 @@ namespace fsfp::db{
     struct file_metadata {
         unsigned long file_size;
         unsigned int scope;
-        char* key;
-        size_t key_size;
+        std::string key;
     };
 
-    fsfp::types::raw_val file_metadata_to_raw_val(file_metadata file_metadata);
-    file_metadata raw_val_to_file_metadata(fsfp::types::raw_val file_metadata);
+    size_t size_of_file_metadata(const file_metadata& file_m);
+    uint8_t* serialize_file_metadata(file_metadata& file_m);
+    file_metadata deserialize_file_metadata(uint8_t* raw_value, size_t size = 0);
 
-    int file_put(LMDBWrapper* lmdb, std::string owner, file_metadata& owner_metadata);
+    int file_put(LMDBWrapper* lmdb, std::string owner, file_metadata& file_m);
     file_metadata file_get(LMDBWrapper* lmdb, std::string owner);
     int file_del(LMDBWrapper* lmdb, std::string owner);
 }

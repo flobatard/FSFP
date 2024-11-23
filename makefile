@@ -24,7 +24,7 @@ OBJS=$(SOURCES:%.cpp=%.o)
 PATHOBJS=$(OBJS:%=$(OBJ)%)
 WARNINGS=-Wall -Wextra -pedantic -pedantic-errors
 
-TEST_SOURCES=concurrency_test.cpp simple_test.cpp search_test.cpp
+TEST_SOURCES=concurrency_test.cpp simple_test.cpp search_test.cpp serialize.cpp
 TEST_BIN=$(TEST)bin$(SEP)
 TEST_OBJ=$(TEST)obj$(SEP)
 TEST_OBJS=$(TEST_SOURCES:$(TEST)$(SEP)%.cpp=$(TEST)$(SEP)%.o)
