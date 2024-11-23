@@ -1,21 +1,28 @@
 #include "databases/owners.h"
+#include <cstring> 
+
+using namespace fsfp::types;
 
 namespace fsfp::db{
-    void owner_metadata_to_raw_val(owner_metadata owner_metadata, fsfp::types::raw_val& raw_val){
-        if (raw_val.data != NULL)
-        {
-            free(raw_val.data);
-        }
-        raw_val.size = sizeof(owner_metadata.max_data_size);
-        raw_val.data = malloc(raw_val.size);
-        raw_val.data = &owner_metadata.max_data_size;
-
-
+    size_t size_of_owner_metadata(const owner_metadata& owner_m){
+        return sizeof(owner_m.max_data_size) + sizeof(owner_m.active);
     }
-    
-    void raw_val_to_owner_metadata(fsfp::types::raw_val raw_val, owner_metadata& owner_metadata){
 
+    void* serialize_owner_metadata(owner_metadata& owner_m){
+        uint8_t* ret = (uint8_t*)malloc(size_of_owner_metadata(owner_m));
+        size_t current_offset = 0;
+        memcpy(ret + current_offset, &(owner_m.max_data_size), sizeof(owner_m.max_data_size));
+        current_offset = current_offset + sizeof(owner_m.max_data_size);
+        memcpy(ret + current_offset, &(owner_m.active), sizeof(owner_m.active));
+        return (void*) ret;
+    }
 
-
+    owner_metadata deserialize_owner_metadata(void* raw_value){
+        owner_metadata ret;
+        size_t current_offset = 0;
+        memcpy(&(ret.max_data_size), ((uint8_t *)raw_value + current_offset), sizeof(ret.max_data_size));
+        current_offset = current_offset + sizeof(ret.max_data_size);
+        memcpy(&(ret.active), ((uint8_t *)raw_value + current_offset), sizeof(ret.active));
+        return ret;
     }
 }

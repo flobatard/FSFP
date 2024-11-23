@@ -22,7 +22,7 @@ SOURCES=LMDB_wrapper.cpp http_server.cpp fsfp_utils.cpp routes/admin.cpp routes/
 
 OBJS=$(SOURCES:%.cpp=%.o)
 PATHOBJS=$(OBJS:%=$(OBJ)%)
-WARNINGS=-Wall -Wextra -pedantic
+WARNINGS=-Wall -Wextra -pedantic -pedantic-errors
 
 TEST_SOURCES=concurrency_test.cpp simple_test.cpp search_test.cpp
 TEST_BIN=$(TEST)bin$(SEP)
@@ -41,8 +41,11 @@ FLAGS= -std=c++23 $(WARNINGS) -I$(HEADERDIR) -I$(INCLUDEDIR) -L$(LIB)
 all: $(OBJS) main.o $(BIN)
 	$(CC) $(FLAGS) -o $(BIN)$(NAME).exe -static $(OBJ)main.o $(OBJS:%=$(OBJ)%) $(LIBS)
 
+# For the weird linux line, note that this command doesn't work on other platform than linux
+# https://stackoverflow.com/questions/78293129/c-programs-fail-with-asan-addresssanitizerdeadlysignal/78302537
 mem_main: $(OBJS) main.o $(BIN)
 	$(CC) $(FSANITIZER_FLAG) $(FLAGS) -o $(BIN)mem_$(NAME).exe $(OBJ)main.o $(OBJS:%=$(OBJ)%) $(LIBS)
+	/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 ./bin/mem_$(NAME).exe
 
 tests: $(TEST_EXES)
 	@echo Test generated
