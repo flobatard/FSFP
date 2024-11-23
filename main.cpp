@@ -6,7 +6,7 @@
 #include "http_server.h"
 #include "databases/registry.h"
 #include "databases/owners.h"
-#include "databases/file.h"
+#include "databases/files.h"
 
 #ifdef _WIN32
     #define SEP "\\"
