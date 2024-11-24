@@ -20,7 +20,7 @@ namespace fsfp::db{
     file_metadata deserialize_file_metadata(uint8_t* raw_value, size_t size = 0);
 
     int file_put(LMDBWrapper* lmdb, std::string owner, file_metadata& file_m);
-    file_metadata file_get(LMDBWrapper* lmdb, std::string owner);
+    int file_get(LMDBWrapper* lmdb, std::string owner, file_metadata& file_m);
     int file_del(LMDBWrapper* lmdb, std::string owner);
 }
 

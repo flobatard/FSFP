@@ -1,6 +1,7 @@
 #include "routes/admin.h"
 #include "databases/owners.h"
 #include "databases/registry.h"
+#include "LMDB_wrapper.h"
 #include "routes/middlewares/json_types.h"
 #include "routes/middlewares/auth_middlewares.h"
 #include "cstdlib"
@@ -12,29 +13,57 @@ using namespace std;
 
 int admin_routes(FSFP_APP_TYPE& app)
 {   
-    CROW_ADMIN_ROUTE(app, "/admin/owner").methods(crow::HTTPMethod::Post)([](const crow::request& req){
+    CROW_ADMIN_ROUTE(app, "/admin/owner/<string>").methods(crow::HTTPMethod::Put)([](const crow::request& req, crow::response& res, string owner){
         crow::json::rvalue rjson_body = crow::json::load(req.body.c_str(), req.body.size());
-
-        if (rjson_body.has("toto")){
-            cout << "toto: " << rjson_body["toto"].s() << endl;
-        }
-        if (rjson_body.has("max_data_size")
-            && rjson_body["max_data_size"].t() == crow::json::type::String)
+        fsfp::db::owner_metadata owner_m;
+        if (!rjson_body.has("max_data_size") || !(rjson_body["max_data_size"].nt() == crow::json::num_type::Unsigned_integer))
         {
-            cout << "max_data_size" << rjson_body["max_data_size"].s() << endl;
+            res.code = 400;
+            res.end("Invalid max_size_data attribute");
+            return;
         }
 
-        if (rjson_body.has("max_data_size") 
-            && rjson_body["max_data_size"].t() == crow::json::type::Number 
-            && rjson_body["max_data_size"].nt() == crow::json::num_type::Unsigned_integer)
+        if (!rjson_body.has("active") || !(rjson_body["active"].nt() == crow::json::num_type::Unsigned_integer))
         {
-            cout << "max_data_size" << rjson_body["max_data_size"].u() << endl;
+            res.code = 400;
+            res.end("Invalid active attribute");
+            return;
+        }
+
+        owner_m.max_data_size = rjson_body["max_data_size"].u();
+        owner_m.active = rjson_body["active"].u();
+
+        DatabasesRegistry* db_registry = DatabasesRegistry::GetInstance();
+        LMDBWrapper* lmdb = db_registry->getRegistryDatabase();
+
+        fsfp::db::owner_put(lmdb, owner, owner_m);
+        crow::json::wvalue wjson_body(rjson_body);
+        
+        res.code = 201;
+        res.set_header("Content-Type", "application/json");
+        res.end(wjson_body.dump());
+    });
+
+    CROW_ADMIN_ROUTE(app, "/admin/owner/<string>").methods(crow::HTTPMethod::Get)([](const crow::request&, crow::response& res, string owner){
+        DatabasesRegistry* db_registry = DatabasesRegistry::GetInstance();
+        LMDBWrapper* lmdb = db_registry->getRegistryDatabase();
+
+        fsfp::db::owner_metadata owner_m;
+        int rc = fsfp::db::owner_get(lmdb, owner, owner_m);
+
+        if (rc)
+        {
+            res.code = rc;
+            res.end("");
+            return;
         }
         
+        crow::json::wvalue wjson_body({{"max_data_size", owner_m.max_data_size},
+                                        {"active", owner_m.active}});
         
-        crow::json::wvalue x ({{"zmessage", "Hello, World!"}});
-        x["message2"] = "Hello World.. Again!";
-        return x;
+        res.code = 200;
+        res.set_header("Content-Type", "application/json");
+        res.end(wjson_body.dump());
     });
 
 

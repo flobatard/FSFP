@@ -41,10 +41,11 @@ namespace fsfp::db{
         return ret;
     }
 
-    owner_metadata owner_get(LMDBWrapper* lmdb, std::string owner){
+    int owner_get(LMDBWrapper* lmdb, std::string owner, owner_metadata& ret){
         MDB_val v = lmdb->get(owner);
-        owner_metadata ret = deserialize_owner_metadata((uint8_t*)v.mv_data, v.mv_size);
-        return ret;
+        if (v.mv_size == 0) {return 404;}
+        ret = deserialize_owner_metadata((uint8_t*)v.mv_data, v.mv_size);
+        return 0;
     }
     int owner_del(LMDBWrapper* lmdb, std::string owner){
         return lmdb->remove(owner);
