@@ -1,3 +1,7 @@
+#ifndef DATABASES_FILES_H
+#define DATABASES_FILES_H
+
+
 #include "fsfp_types.h"
 #include <cstddef>
 #include <string>
@@ -19,3 +23,5 @@ namespace fsfp::db{
     file_metadata file_get(LMDBWrapper* lmdb, std::string owner);
     int file_del(LMDBWrapper* lmdb, std::string owner);
 }
+
+#endif //DATABASES_FILES_H

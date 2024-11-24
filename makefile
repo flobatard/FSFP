@@ -17,7 +17,7 @@ OBJSUBDIRS=databases routes/middlewares
 OBJDIRS=$(OBJSUBDIRS:%=$(OBJ)%)
 
 SOURCES=LMDB_wrapper.cpp http_server.cpp fsfp_utils.cpp routes/admin.cpp routes/guest.cpp routes/owner.cpp databases/registry.cpp \
-	databases/files.cpp databases/owners.cpp routes/middlewares/auth_middlewares.cpp
+	databases/files.cpp databases/owners.cpp routes/middlewares/auth_middlewares.cpp routes/middlewares/json_types.cpp
 
 
 OBJS=$(SOURCES:%.cpp=%.o)

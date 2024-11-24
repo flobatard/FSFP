@@ -1,3 +1,6 @@
+#ifndef DATABASES_OWNERS_H
+#define DATABASES_OWNERS_H
+
 #include "fsfp_types.h"
 #include <cstddef>
 #include <string>
@@ -17,3 +20,5 @@ namespace fsfp::db{
     owner_metadata owner_get(LMDBWrapper* lmdb, std::string owner);
     int owner_del(LMDBWrapper* lmdb, std::string owner);
 }
+
+#endif //DATABASES_OWNERS_H

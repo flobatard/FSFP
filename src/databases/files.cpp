@@ -35,6 +35,7 @@ namespace fsfp::db{
 
     file_metadata deserialize_file_metadata(uint8_t* raw_value, size_t size){
         file_metadata ret;
+        ret.file_size = 0;
         size_t current_offset = 0;
         
         if (size && ((current_offset + sizeof(ret.file_size)) > size)) {return ret;}
