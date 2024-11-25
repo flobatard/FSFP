@@ -21,7 +21,7 @@ DatabasesRegistry::DatabasesRegistry() {
     for (unsigned int i = 0; i < owner_list.size(); i++)
     {
         cout << "Owner: " << owner_list[i] << endl;
-        registry.insert(std::pair<std::string, LMDBWrapper*>(owner_list[i], new LMDBWrapper(owner_list[i])));
+        registry.insert(std::pair<std::string, LMDBWrapper*>(owner_list[i], new LMDBWrapper(dbs_path / "owners" / owner_list[i])));
     }
 
     std::cout << "Registry launched" << endl;
@@ -56,6 +56,30 @@ LMDBWrapper* DatabasesRegistry::getRegistryDatabase() {
 
 LMDBWrapper* DatabasesRegistry::getRootDatabase() {
     return root_db;
+}
+
+int DatabasesRegistry::addOwnerToRegistry(const std::string& owner) {
+    fs::path dbs_path("dbs");
+    registry.insert(std::pair<std::string, LMDBWrapper*>(owner, new LMDBWrapper(dbs_path / "owners" / owner)));
+    return 0;
+}
+
+int DatabasesRegistry::removeOwner(const std::string& owner) {
+    removeOwnerFromRegistry(owner);
+    removeOwnerDatabase(owner);
+    return 0;
+}
+
+int DatabasesRegistry::removeOwnerFromRegistry(const std::string& owner) {
+    auto pos = registry.find(owner);
+    registry.erase(pos);
+    return 0;
+}
+
+int DatabasesRegistry::removeOwnerDatabase(const std::string& owner) {
+    fs::path data_path("data");
+    fs::remove_all(data_path / "owners" / owner);
+    return 0;
 }
 
 int DatabasesRegistry::insertNewOwner(std::string owner, LMDBWrapper* lmdb) {

@@ -19,6 +19,10 @@ class DatabasesRegistry
         LMDBWrapper* getOwnerDatabase(const std::string& owner);
         LMDBWrapper* getRootDatabase();
         LMDBWrapper* getRegistryDatabase();
+        int removeOwner(const std::string& owner);
+        int addOwnerToRegistry(const std::string& owner);
+        int removeOwnerDatabase(const std::string& owner);
+        int removeOwnerFromRegistry(const std::string& owner);
         int insertNewOwner(std::string owner, LMDBWrapper* lmdb);
         DatabasesRegistry();
         ~DatabasesRegistry();

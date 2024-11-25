@@ -37,6 +37,7 @@ int admin_routes(FSFP_APP_TYPE& app)
         LMDBWrapper* lmdb = db_registry->getRegistryDatabase();
 
         fsfp::db::owner_put(lmdb, owner, owner_m);
+        db_registry->addOwnerToRegistry(owner);
         crow::json::wvalue wjson_body(rjson_body);
         
         res.code = 201;
@@ -76,6 +77,7 @@ int admin_routes(FSFP_APP_TYPE& app)
             res.end();
             return;
         }
+        db_registry->removeOwner(owner);
         
         res.code = 200;
         res.end();
