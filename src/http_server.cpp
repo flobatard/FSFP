@@ -9,7 +9,7 @@ namespace fs = std::filesystem;
 
 int run_server()
 {
-    crow::App<AdminAreaGuard, OwnerAreaGuard> app; //define your crow application
+    FSFP_APP_TYPE app; //define your crow application
 
     admin_routes(app);
     owner_routes(app);
