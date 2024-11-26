@@ -3,6 +3,7 @@
 #include <iostream>
 
 using namespace std;
+using namespace fsfp::types;
 
 namespace fsfp::db{
     size_t size_of_file_metadata(const file_metadata& file_m){
@@ -60,4 +61,25 @@ namespace fsfp::db{
         
         return ret;
     }
+
+    int file_put(LMDBWrapper* lmdb, std::string path, file_metadata& file_metadata){
+        uint8_t* raw_val = serialize_file_metadata(file_metadata);
+        size_t val_size = size_of_file_metadata(file_metadata);
+        MDB_val val;
+        val.mv_data = raw_val;
+        val.mv_size = val_size;
+        int ret = lmdb->put(path, val);
+        free(raw_val);
+        return ret;
+    }
+
+    int file_get(LMDBWrapper* lmdb, std::string path, file_metadata& ret){
+        MDB_val v = lmdb->get(path);
+        if (v.mv_size == 0) {return 404;}
+        ret = deserialize_file_metadata((uint8_t*)v.mv_data, v.mv_size);
+        return 0;
+    }
+    int file_del(LMDBWrapper* lmdb, std::string path){
+        return lmdb->remove(path);
+    }    
 }

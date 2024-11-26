@@ -50,20 +50,33 @@ int run_server()
         res.end();
     });
 
-    CROW_ROUTE(app, "/test/upload/<path>").methods(crow::HTTPMethod::Post)([](const crow::request& req, string path){
+    CROW_ROUTE(app, "/test/upload/<path>").methods(crow::HTTPMethod::Post)([](const crow::request& req, crow::response& res, string path){
         crow::multipart::message_view file_message(req);
+        cout << "Parts size: " << file_message.parts.size() << endl;
         if (file_message.parts.size() == 0)
         {
-            return crow::response(400);
+            res.code = 400;
+            res.end("No file provided");
+            return;
         }
+        string key = "";
+        string scope;
+        crow::multipart::part_view file;
+        parse_message_view(file_message, file, scope, key);
+
 
         crow::multipart::part_view part = file_message.parts[0];
+        print_headers(part.headers);
+        print_values(file_message.part_map);
         const int err = upload_file(path, part);
         if (err)
         {
-            return crow::response(err);
+            res.code = err;
+            res.end("Error uploading file");
+            return;
         }
-        return crow::response(200);
+        res.code = 200;
+        res.end();
     });
 
     //set the port, set the app to run on multiple threads, and run the app

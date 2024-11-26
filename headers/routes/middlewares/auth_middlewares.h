@@ -31,20 +31,14 @@ struct AdminAreaGuard : crow::ILocalMiddleware
 };
 
 
-int check_owner_credentials(const crow::request& req);
+int check_owner_credentials(const crow::request& req, const std::string owner);
 struct OwnerAreaGuard : crow::ILocalMiddleware
 {
     struct context
     {};
 
-    void before_handle(crow::request& req, crow::response& res, context&)
+    void before_handle(crow::request&, crow::response&, context&)
     {
-        int owner_check = check_owner_credentials(req);
-        if (owner_check > 200)
-        {
-            res.code = owner_check;
-            res.end();
-        }
     }
 
     void after_handle(crow::request&, crow::response&, context&)
