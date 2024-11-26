@@ -168,7 +168,6 @@ int owner_routes(FSFPApp& app){
     CROW_OWNER_ROUTE(app, "/owner/<string>/files/<path>")([](const crow::request& req, crow::response& res, std::string owner, std::string path){
         CHECK_OWNER_CREDENTIALS(req, owner, res)
         fs::path ret = owner_file_path(owner, path);
-        cout << ret << endl;
         res.set_static_file_info(ret);
         res.end();
     });

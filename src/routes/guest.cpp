@@ -65,7 +65,8 @@ int guest_routes(FSFPApp& app){
     CROW_ROUTE(app, "/guest/root/<path>")([](const crow::request& req, crow::response& res, std::string path){
         DatabasesRegistry* registry = DatabasesRegistry::GetInstance();
         LMDBWrapper* lmdb = registry->getRootDatabase();
-        std::string key = req.url_params.get("key");
+        char* c_key = req.url_params.get("key");
+        std::string key( c_key ? c_key : "");
         std::string error_message = "";
 
         int rc = check_file(lmdb, path, key, error_message);
