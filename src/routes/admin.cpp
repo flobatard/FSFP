@@ -46,7 +46,10 @@ int admin_routes(FSFPApp& app)
         LMDBWrapper* lmdb = db_registry->getRegistryDatabase();
 
         fsfp::db::owner_put(lmdb, owner, owner_m);
-        db_registry->addOwnerToRegistry(owner);
+        if (db_registry->getOwnerDatabase(owner) == NULL)
+        {
+            db_registry->addOwnerToRegistry(owner);
+        }
         crow::json::wvalue wjson_body(rjson_body);
         
         res.code = 201;
@@ -80,14 +83,25 @@ int admin_routes(FSFPApp& app)
         DatabasesRegistry* db_registry = DatabasesRegistry::GetInstance();
         LMDBWrapper* lmdb = db_registry->getRegistryDatabase();
 
-        int rc = fsfp::db::owner_del(lmdb, owner);
+        fsfp::db::owner_metadata owner_m;
+
+        int rc = fsfp::db::owner_get(lmdb, owner, owner_m);
         if (rc){
             res.code = 404;
             res.end();
             return;
         }
         db_registry->removeOwner(owner);
-        
+
+        fs::path owner_file_path = "data";
+        owner_file_path = owner_file_path / "files" / owner;
+        fs::remove_all(owner_file_path);
+        rc = fsfp::db::owner_del(lmdb, owner);
+        if (rc){
+            res.code = 500;
+            res.end("Possible inconsistency introduces");
+            return;
+        }
         res.code = 200;
         res.end();
     });

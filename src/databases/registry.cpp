@@ -72,13 +72,14 @@ int DatabasesRegistry::removeOwner(const std::string& owner) {
 
 int DatabasesRegistry::removeOwnerFromRegistry(const std::string& owner) {
     auto pos = registry.find(owner);
+    delete pos->second;
     registry.erase(pos);
     return 0;
 }
 
 int DatabasesRegistry::removeOwnerDatabase(const std::string& owner) {
     fs::path data_path("data");
-    fs::remove_all(data_path / "owners" / owner);
+    fs::remove_all(data_path / "dbs" / "owners" / owner);
     return 0;
 }
 
