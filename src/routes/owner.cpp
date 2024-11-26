@@ -2,6 +2,7 @@
 #include <filesystem>
 #include "fsfp_utils.h"
 #include "LMDB_wrapper.h"
+#include "databases/registry.h"
 #include "databases/owners.h"
 #include "databases/files.h"
 
@@ -30,7 +31,7 @@ namespace fs = std::filesystem;
     }
 
 
-int owner_routes(FSFP_APP_TYPE& app){
+int owner_routes(FSFPApp& app){
     CROW_OWNER_ROUTE(app, "/owner/<string>/me")([](const crow::request& req, crow::response& res, std::string owner){
         CHECK_OWNER_CREDENTIALS(req, owner, res)
         DatabasesRegistry* registry = DatabasesRegistry::GetInstance();
@@ -45,6 +46,19 @@ int owner_routes(FSFP_APP_TYPE& app){
 
         crow::json::wvalue wjson_body({{"max_data_size", owner_m.max_data_size},
                                         {"active", owner_m.active}});
+        res.code = 200;
+        res.set_header("Content-Type", "application/json");
+        res.end(wjson_body.dump());
+    });
+
+    CROW_OWNER_ROUTE(app, "/owner/<string>/search")([](const crow::request&req, crow::response& res, std::string owner){
+        CHECK_OWNER_CREDENTIALS(req, owner, res)
+        RETRIEVE_LMDB(owner, res)
+        std::vector<std::string> files = lmdb->keys();
+
+        crow::json::wvalue wjson_body;
+        wjson_body["files"] = files;
+
         res.code = 200;
         res.set_header("Content-Type", "application/json");
         res.end(wjson_body.dump());
@@ -83,7 +97,68 @@ int owner_routes(FSFP_APP_TYPE& app){
         res.end(wjson_body.dump());
     });
 
-    CROW_OWNER_ROUTE(app, "/owner/<string>/metadata/<path>").methods(crow::HTTPMethod::PUT)([](const crow::request& , crow::response& , std::string , std::string ){
+    CROW_OWNER_ROUTE(app, "/owner/<string>/metadata/<path>").methods(crow::HTTPMethod::PUT)([](const crow::request& req, crow::response& res, std::string owner, std::string path){
+        CHECK_OWNER_CREDENTIALS(req, owner, res)
+        RETRIEVE_LMDB(owner, res)
+        crow::json::rvalue rjson_body = crow::json::load(req.body.c_str(), req.body.size());
+        // TODO Transactionnality issue here not managed yet
+        // Might lead on rare cases with wrong file_size
+        // We should handle most critical memory limits with syscall and not file_metadata so for now 
+        // No worries
+        fsfp::db::file_metadata file_metadata;
+        int rc = file_get(lmdb, path, file_metadata);
+        if (rc)
+        {
+            res.code = 404;
+            res.end("File not found");
+            return;
+        }
+
+        if (rjson_body.has("key") && (rjson_body["key"].t() == crow::json::type::String))
+        {
+            file_metadata.key = rjson_body["key"].s();
+        }
+
+        if (rjson_body.has("scope") && (rjson_body["scope"].t() == crow::json::type::String))
+        {
+            string scope_str = rjson_body["scope"].s();
+            unsigned int scope_code = str_scope_to_code(scope_str);
+            if (scope_code == 9999)
+            {
+                res.code = 400;
+                res.end("Invalid scope: sould be public, private or PROTECTED, got : " + scope_str);
+                return;
+            }
+            file_metadata.scope = scope_code;
+        }
+
+        rc = file_put(lmdb, path, file_metadata);
+        if (rc)
+        {
+            res.code = 500;
+            res.end("Unable to put the data");
+            return;
+        }
+
+        res.code = 200;
+        res.end();
+    });
+
+    CROW_OWNER_ROUTE(app, "/owner/<string>/unsafe/metadata/<path>").methods(crow::HTTPMethod::DELETE)([](const crow::request& req, crow::response& res, std::string owner, std::string path){
+        CHECK_OWNER_CREDENTIALS(req, owner, res)
+        RETRIEVE_LMDB(owner, res)
+        int rc = fsfp::db::file_del(lmdb, path);
+        fs::path file_path = owner_file_path(owner, path);
+        fs::remove(file_path);
+        if (rc)
+        {
+            res.code = 404;
+            res.end("Unable to locate metadata file");
+            return;
+        }
+
+        res.code = 200;
+        res.end();
     });
 
     CROW_OWNER_ROUTE(app, "/owner/<string>/global_metadata").methods(crow::HTTPMethod::PUT)([](const crow::request& , crow::response& , std::string ){
@@ -93,6 +168,7 @@ int owner_routes(FSFP_APP_TYPE& app){
     CROW_OWNER_ROUTE(app, "/owner/<string>/files/<path>")([](const crow::request& req, crow::response& res, std::string owner, std::string path){
         CHECK_OWNER_CREDENTIALS(req, owner, res)
         fs::path ret = owner_file_path(owner, path);
+        cout << ret << endl;
         res.set_static_file_info(ret);
         res.end();
     });
@@ -117,6 +193,14 @@ int owner_routes(FSFP_APP_TYPE& app){
             else {res.code = 500; res.end("Unknown error");}
             return;
         }
+        fsfp::db::file_metadata file_m;
+        file_m.scope = str_scope_to_code(scope);
+        if (file_m.scope == 9999)
+        {
+            res.code = 400;
+            res.end("Invalid scope: sould be public, private or protected, got : " + scope);
+        }
+
         fs::path file_path = owner;
         file_path = file_path / path;
         rc = upload_file(file_path, part);
@@ -130,17 +214,70 @@ int owner_routes(FSFP_APP_TYPE& app){
             res.end(ret);
         }
 
-        fsfp::db::file_metadata file_m;
         file_m.file_size = part.body.size();
-        file_m.scope = str_scope_to_code(scope);
         file_m.key = key;
+        
+        std::string owner_path = "owner/" + owner + "/files/" + path;
+        std::string guest_path = "guest/";
+        switch(file_m.scope)
+        {
+            case fsfp::types::scope_type::PUBLIC:
+                guest_path = guest_path + owner + "/" + path;
+                break;
+            case fsfp::types::scope_type::PROTECTED:
+                guest_path = guest_path + owner + "/" + path + "?key=" + key;
+                break;
+            case fsfp::types::scope_type::PRIVATE:
+                guest_path = "";
+                break;
+            default:
+                guest_path = "";
+        }
+
         fsfp::db::file_put(lmdb, path, file_m);
 
-        res.end();
+        crow::json::wvalue wjson_body({
+                                        {"scope", code_scope_to_str(file_m.scope)},
+                                        {"key", file_m.key},
+                                        {"path", path},
+                                        {"guest_path", guest_path},
+                                        {"owner_path", owner_path}});
+        res.code = 200;
+        res.set_header("Content-Type", "application/json");
+        res.end(wjson_body.dump());
     });
 
-    CROW_OWNER_ROUTE(app, "/owner/<string>/files/<path>").methods(crow::HTTPMethod::DELETE)([](const crow::request& , crow::response& , std::string , std::string ){
+    CROW_OWNER_ROUTE(app, "/owner/<string>/files/<path>").methods(crow::HTTPMethod::DELETE)([](const crow::request& req , crow::response& res, std::string owner, std::string path){
+        CHECK_OWNER_CREDENTIALS(req, owner, res)
+        RETRIEVE_LMDB(owner, res)
 
+        fsfp::db::file_metadata file_m;
+        int rc = fsfp::db::file_get(lmdb, path, file_m);
+        if (rc)
+        {
+            res.code = rc;
+            res.end("File not found");
+            return;
+        }
+        fs::path ret = owner_file_path(owner, path);
+        if (!fs::remove(ret))
+        {
+            res.code = 500;
+            res.end("Unable to remove the file");
+            return;
+        }
+
+        rc = fsfp::db::file_del(lmdb, path);
+        if (rc)
+        {
+            res.code = 500;
+            CROW_LOG_WARNING << "Unable to delete metadata of file: " << path;
+            res.end("Unable to delete metadata for the file, however file was deleted successfully");
+            return;
+        }
+
+        res.code = 200;
+        res.end();
     });
     return 0;
 }

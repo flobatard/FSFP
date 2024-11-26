@@ -1,14 +1,12 @@
 #ifndef DATABASES_FILES_H
 #define DATABASES_FILES_H
 
-
 #include "fsfp_types.h"
 #include <cstddef>
 #include <string>
 #include "LMDB_wrapper.h"
 
 namespace fsfp::db{
-
     struct file_metadata {
         unsigned long file_size;
         unsigned int scope;

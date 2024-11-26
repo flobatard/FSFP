@@ -36,7 +36,7 @@ DEPENDENCIES=liblmdb.a
 LIBS=$(DEPENDENCIES:%.a=$(LIB)%.a)
 FSANITIZER_FLAG=-fsanitize=address
 
-FLAGS= -std=c++23 $(WARNINGS) -I$(HEADERDIR) -I$(INCLUDEDIR) -L$(LIB)
+FLAGS= -std=c++23 -O2 $(WARNINGS) -I$(HEADERDIR) -I$(INCLUDEDIR) -L$(LIB)
 
 all: $(OBJS) main.o $(BIN)
 	$(CC) $(FLAGS) -o $(BIN)$(NAME).exe -static $(OBJ)main.o $(OBJS:%=$(OBJ)%) $(LIBS)

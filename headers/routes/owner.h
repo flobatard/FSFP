@@ -7,6 +7,6 @@
 #include <crow.h>
 #include "fsfp_app_types.h"
 
-int owner_routes(FSFP_APP_TYPE& app);
+int owner_routes(FSFPApp& app);
 
 #endif //ROUTES_OWNER_H

@@ -1,4 +1,5 @@
 #include "fsfp_utils.h"
+#include "fsfp_types.h"
 #include <filesystem>
 
 #ifdef _WIN32
@@ -7,28 +8,24 @@
     #define DATA_FILES "data/files"
 #endif
 
-#define SCOPE_PUBLIC 0
-#define SCOPE_KEY_PROTECTED 1
-#define SCOPE_PRIVATE 2
-
 using namespace std;
 namespace fs = std::filesystem;
 
 unsigned int str_scope_to_code(const string& scope){
-    if (scope == "public") {return SCOPE_PUBLIC;}
-    if (scope == "protected") {return SCOPE_KEY_PROTECTED;}
-    if (scope == "private") {return SCOPE_PRIVATE;}
+    if (scope == "public") {return fsfp::types::scope_type::PUBLIC;}
+    if (scope == "protected") {return fsfp::types::scope_type::PROTECTED;}
+    if (scope == "private") {return fsfp::types::scope_type::PRIVATE;}
     return 9999;
 }
 
 string code_scope_to_str(const unsigned int scope){
     switch(scope)
     {
-        case SCOPE_PUBLIC:
+        case fsfp::types::scope_type::PUBLIC:
             return "public";
-        case SCOPE_KEY_PROTECTED:
+        case fsfp::types::scope_type::PROTECTED:
             return "protected";
-        case SCOPE_PRIVATE:
+        case fsfp::types::scope_type::PRIVATE:
             return "private";
         default:
             return "unknown";
@@ -51,7 +48,7 @@ int print_values(crow::multipart::mp_view_map values)
     return 0;
 }
 
-int parse_message_view(const crow::multipart::message_view& message_view, crow::multipart::part_view& part, std::string scope, std::string& key)
+int parse_message_view(const crow::multipart::message_view& message_view, crow::multipart::part_view& part, std::string& scope, std::string& key)
 {
     int fileFlag = 1;
     int scopeFlag = 2;
@@ -75,7 +72,7 @@ int parse_message_view(const crow::multipart::message_view& message_view, crow::
             CROW_LOG_WARNING << "Unknown multipart key: " << i.first;
         }
     }
-    return fileFlag && scopeFlag;
+    return fileFlag || scopeFlag;
 }
 
 fs::path owner_file_path(const string& owner, const string& path)

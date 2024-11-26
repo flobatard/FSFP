@@ -47,6 +47,7 @@ namespace fsfp::db{
         ret = deserialize_owner_metadata((uint8_t*)v.mv_data, v.mv_size);
         return 0;
     }
+
     int owner_del(LMDBWrapper* lmdb, std::string owner){
         return lmdb->remove(owner);
     }

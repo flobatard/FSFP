@@ -7,6 +7,12 @@ namespace fsfp::types{
         void* data;
         size_t size;
     };
-}
 
+    enum scope_type : unsigned int
+    {
+        PUBLIC,
+        PROTECTED,
+        PRIVATE
+    };
+}
 #endif //FSFP_TYPES_H

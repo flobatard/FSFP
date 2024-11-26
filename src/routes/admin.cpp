@@ -7,15 +7,24 @@
 #include "cstdlib"
 
 using namespace std;
+namespace fs = std::filesystem;
 
 #define CROW_ADMIN_ROUTE(app, route) \
     CROW_ROUTE(app, route).CROW_MIDDLEWARES(app, AdminAreaGuard)
 
-int admin_routes(FSFP_APP_TYPE& app)
+int admin_routes(FSFPApp& app)
 {   
     CROW_ADMIN_ROUTE(app, "/admin/owner/<string>").methods(crow::HTTPMethod::PUT)([](const crow::request& req, crow::response& res, string owner){
         crow::json::rvalue rjson_body = crow::json::load(req.body.c_str(), req.body.size());
         fsfp::db::owner_metadata owner_m;
+
+        if (owner == "root" || owner == "admin")
+        {
+            res.code = 400;
+            res.end("Invalid owner name, owner name root and admin are only for the admin user");
+            return;
+        }
+
         if (!rjson_body.has("max_data_size") || !(rjson_body["max_data_size"].nt() == crow::json::num_type::Unsigned_integer))
         {
             res.code = 400;
@@ -97,10 +106,5 @@ int admin_routes(FSFP_APP_TYPE& app)
         res.set_header("Content-Type", "application/json");
         res.end(wjson_body.dump());
     });
-
-
-
-
-
     return 0;
 }

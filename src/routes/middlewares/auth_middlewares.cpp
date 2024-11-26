@@ -12,6 +12,7 @@ int check_admin_credentials(const crow::request& req){
 }
 
 int check_owner_credentials(const crow::request& req, const std::string owner){
+    if (owner == "root" || owner == "admin") {return 403;}
     string owner_key("DUMMY_OWNER_KEY"); //getenv("FSFP_ADMIN_KEY");
     string user_key = crow::get_header_value(req.headers, "fsfp_owner_key");
     return 0;

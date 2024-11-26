@@ -10,5 +10,6 @@
 
 #define FSFP_APP_TYPE crow::App<AdminAreaGuard, OwnerAreaGuard, TimeLogMiddleware>
 
+typedef crow::App<AdminAreaGuard, OwnerAreaGuard, TimeLogMiddleware> FSFPApp;
 
 #endif //FSFP_APP_TYPES_H

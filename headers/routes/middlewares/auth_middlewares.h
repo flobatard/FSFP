@@ -5,7 +5,6 @@
 
 #include <boost/asio.hpp>
 #include <crow.h>
-#include "fsfp_app_types.h"
 #include "LMDB_wrapper.h"
 #include "databases/registry.h"
 #include "databases/owners.h"
@@ -39,6 +38,7 @@ struct OwnerAreaGuard : crow::ILocalMiddleware
 
     void before_handle(crow::request&, crow::response&, context&)
     {
+
     }
 
     void after_handle(crow::request&, crow::response&, context&)

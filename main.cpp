@@ -20,8 +20,7 @@ using namespace fsfp::db;
 
 int main()
 {
-    LMDBWrapper root_lmdb = LMDBWrapper("root");
-    DatabasesRegistry* registry = DatabasesRegistry::GetInstance();
+    DatabasesRegistry::GetInstance();
     std::cout << "Boost version: " 
           << BOOST_VERSION / 100000
           << "."

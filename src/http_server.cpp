@@ -2,6 +2,7 @@
 #include "fsfp_utils.h"
 #include "routes/admin.h"
 #include "routes/owner.h"
+#include "routes/guest.h"
 #include "fsfp_app_types.h"
 
 using namespace std;
@@ -9,10 +10,11 @@ namespace fs = std::filesystem;
 
 int run_server()
 {
-    FSFP_APP_TYPE app; //define your crow application
+    FSFPApp app; //define your crow application
 
     admin_routes(app);
     owner_routes(app);
+    guest_routes(app);
 
     //define your endpoint at the root directory
     CROW_ROUTE(app, "/")([](){

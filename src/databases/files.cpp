@@ -79,6 +79,7 @@ namespace fsfp::db{
         ret = deserialize_file_metadata((uint8_t*)v.mv_data, v.mv_size);
         return 0;
     }
+
     int file_del(LMDBWrapper* lmdb, std::string path){
         return lmdb->remove(path);
     }    
