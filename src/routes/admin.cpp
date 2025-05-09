@@ -101,7 +101,7 @@ int admin_routes(FSFPApp& app)
         rc = fsfp::db::owner_del(lmdb, owner);
         if (rc){
             res.code = 500;
-            res.end("Possible inconsistency introduces");
+            res.end("Possible inconsistency introduced");
             return;
         }
         res.code = 200;

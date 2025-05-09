@@ -74,10 +74,10 @@ int guest_routes(FSFPApp& app){
         {
             res.code = rc;
             res.end(error_message);
+            return;
         }
 
         fs::path file_path = owner_file_path("root", path);
-
         res.set_static_file_info(file_path);
         res.end();
     });

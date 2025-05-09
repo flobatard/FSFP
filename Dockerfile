@@ -1,8 +1,14 @@
-FROM ubuntu:24.04
+FROM ubuntu:latest
 
 RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC 
 RUN apt-get update;
-RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y libboost-all-dev build-essential cmake git openssh-server systemd-coredump pkg-config
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y build-essential;
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y cmake;
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y git;
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y libboost-all-dev openssh-server systemd-coredump pkg-config;
+
+
+
 
 WORKDIR /crow
 RUN git clone https://github.com/CrowCpp/Crow.git
