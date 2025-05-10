@@ -7,6 +7,7 @@
 #include "databases/registry.h"
 #include "databases/owners.h"
 #include "databases/files.h"
+#include "config.h"
 
 #ifdef _WIN32
     #define SEP "\\"
@@ -21,6 +22,10 @@ using namespace fsfp::db;
 int main()
 {
     DatabasesRegistry::GetInstance();
+
+    FSFPConfig* config = FSFPConfig::GetInstance();
+    config->loadConfig();
+
     std::cout << "Boost version: " 
           << BOOST_VERSION / 100000
           << "."
@@ -29,6 +34,7 @@ int main()
           << BOOST_VERSION % 100 
           << std::endl << BOOST_VERSION << endl << (CROW_USE_BOOST && BOOST_VERSION >= 107000) << endl;
     run_server();
+    FSFPConfig::DestroyInstance();
     DatabasesRegistry::DestroyInstance();
     return 0;
 }
