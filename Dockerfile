@@ -1,15 +1,13 @@
-FROM debian:bookworm-slim
+FROM debian:stable-slim
 
-RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC 
-RUN apt-get update
-RUN apt-get upgrade
-
-RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y build-essential
-RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y cmake
-RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y git
-RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y libboost-all-dev openssh-server systemd-coredump pkg-config
-RUN apt-get install -y libssl-dev
-RUN apt-get install -y git-all
+# Problem if apt-get update is not run on the same line as apt-get
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get update -y \
+    && apt-get install -y build-essential \
+    && apt-get install -y git \
+    && apt-get install -y cmake \
+    && apt-get install -y libboost-all-dev openssh-server systemd-coredump pkg-config \
+    && apt-get install -y libssl-dev \
+    && apt-get install -y git-all
 
 
 WORKDIR /crow
@@ -39,7 +37,8 @@ COPY . /service
 
 
 WORKDIR /service
-RUN make
+RUN make dirs
+RUN make -j4
 
 EXPOSE 5000 5000
 

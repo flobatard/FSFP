@@ -21,7 +21,7 @@ SOURCES=LMDB_wrapper.cpp http_server.cpp fsfp_utils.cpp routes/admin.cpp routes/
 	config.cpp
 
 
-OBJS=$(SOURCES:%.cpp=%.o)
+OBJS=$(SOURCES:%.cpp=$(OBJ)%.o)
 PATHOBJS=$(OBJS:%=$(OBJ)%)
 WARNINGS=-Wall -Wextra -pedantic -pedantic-errors
 
@@ -39,13 +39,16 @@ FSANITIZER_FLAG=-fsanitize=address
 
 FLAGS= -std=c++23 -O2 $(WARNINGS) -I$(HEADERDIR) -I$(INCLUDEDIR) -L$(LIB)
 
-all: $(OBJS) main.o $(BIN)
-	$(CC) $(FLAGS) -o $(BIN)$(NAME).exe -static $(OBJ)main.o $(OBJS:%=$(OBJ)%) $(LIBS)
+all: dirs $(OBJS) $(OBJ)main.o $(BIN)
+	$(CC) $(FLAGS) -o $(BIN)$(NAME).exe -static $(OBJ)main.o $(OBJS:%=%) $(LIBS)
+
+#Needs to create obj subdirectory before to prevent weird makefile dependencies if folder are used as target and dependencies
+dirs: $(OBJ) $(OBJDIRS) $(TEST_BIN) $(TEST_OBJ) 
 
 # For the weird linux line, note that this command doesn't work on other platform than linux
 # https://stackoverflow.com/questions/78293129/c-programs-fail-with-asan-addresssanitizerdeadlysignal/78302537
-mem_main: $(OBJS) main.o $(BIN)
-	$(CC) $(FSANITIZER_FLAG) $(FLAGS) -o $(BIN)mem_$(NAME).exe $(OBJ)main.o $(OBJS:%=$(OBJ)%) $(LIBS)
+mem_main: $(OBJS) $(OBJ)main.o $(BIN)
+	$(CC) $(FSANITIZER_FLAG) $(FLAGS) -o $(BIN)mem_$(NAME).exe $(OBJ)main.o $(OBJS:%=%) $(LIBS)
 	/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 ./bin/mem_$(NAME).exe
 
 tests: $(TEST_EXES)
@@ -71,11 +74,11 @@ test_mem%.exe: test_%.o $(TEST_BIN)
 test_%.o: $(TEST_OBJ)
 	$(CC) -g $(FLAGS) -c $(TEST)$(@:test_%.o=%.cpp) -o $(TEST)$(SEP)$(OBJ)$(@:test_%.o=%.o)
 
-main.o: $(OBJ)
+$(OBJ)main.o: main.cpp
 	$(CC) -g $(FLAGS) -c main.cpp -o $(OBJ)main.o
 
-%.o: $(OBJDIRS)
-	$(CC) -g $(FLAGS) -c $(SOURCEDIR)$(@:%.o=%.cpp) -o $(OBJ)$@
+$(OBJ)%.o: $(SOURCEDIR)%.cpp
+	$(CC) -g $(FLAGS) -c $(@:$(OBJ)%.o=$(SOURCEDIR)%.cpp) -o $@
 
 $(BIN):
 	mkdir -p $@
@@ -83,13 +86,13 @@ $(BIN):
 $(OBJ):
 	mkdir -p $@
 
+$(OBJ)%:
+	mkdir -p $@
+
 $(TEST_BIN):
 	mkdir -p $@
 
 $(TEST_OBJ):
-	mkdir -p $@
-
-$(OBJ)%:
 	mkdir -p $@
 
 %:

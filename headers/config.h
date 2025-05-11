@@ -13,6 +13,7 @@ class FSFPConfig
         void operator=(const FSFPConfig &) = delete;
         static FSFPConfig* GetInstance();
         static void DestroyInstance();
+        int readConfig();
         int loadConfig();
         std::string& getSecretKey();
         FSFPConfig();
